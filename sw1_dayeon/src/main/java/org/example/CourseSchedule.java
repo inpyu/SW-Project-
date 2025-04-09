@@ -21,50 +21,16 @@ public class CourseSchedule {
             String line = input.nextLine();
             if(line.startsWith("//") || line.trim().isEmpty()) continue; // 주석 무시
             String[] tokens = modifyFormat(line); // 형식 수정
+            Course course = new Course(tokens);
+            if (!course.isValid()) continue; // 유효하지 않으면 건너뜀
 
-            String name = getName(tokens); // 과목명
-            float credit =  getCredit(tokens);// 학점
-
-            String day = getDay(tokens); // 요일
-            if(!checkDay(day)) { // 요일 체크
-                continue; // 잘못된 요일이면 다음 줄로 넘어감
-            }
-
-            int start = getStart(tokens); // 시작시간
-            if(!checkStart(start)) { // 시작시간 체크
-                continue; // 잘못된 시작시간이면 다음 줄로 넘어감
-            }
-
-            int time = getTime(tokens); // 강의시간
-
-            Course course = new Course(name, credit, day, start, time);
-            if (checkConflict(course)) { // 시간 충돌 체크
+            if (isConflict(course)) { // 시간 충돌 체크
                 continue; // 충돌이 있으면 다음 줄로 넘어감
             }
 
             courses[count] = course; // 과목 배열에 추가
             count++; // 과목 개수 증가
         }
-    }
-
-    private Integer getTime(String[] tokens){
-        return Integer.parseInt(tokens[4].trim());
-    }
-
-    private Integer getStart(String[] tokens){
-        return Integer.parseInt(tokens[3].trim());
-    }
-
-    private String getName(String[] tokens){
-        return tokens[0].trim();
-    }
-
-    private Float getCredit(String[] tokens){
-        return Float.parseFloat(tokens[1].trim());
-    }
-
-    private String getDay(String[] tokens){
-        return tokens[2].trim();
     }
 
     private String[] modifyFormat(String string){
@@ -83,30 +49,7 @@ public class CourseSchedule {
         return file.exists();
     }
 
-
-    private boolean checkStart(int start) {
-        if (start < 1 || start > 9) {
-            System.out.println("Unresolved hour -- " + start);
-            return false;
-        }
-        return true;
-    }
-
-    private boolean checkDay(String day) {
-        switch (day) {
-            case "Mon":
-            case "Tue":
-            case "Wed":
-            case "Thu":
-            case "Fri":
-                return true;
-            default:
-                System.out.println("Unknown date -- " + day);
-                return false;
-        }
-    }
-
-    private boolean checkConflict(Course course) {
+    private boolean isConflict(Course course) {
         for (int i = 0; i < count; i++) {
             Course c = courses[i];
             if (c.getDay().equals(course.getDay())) { // 요일이 같으면
