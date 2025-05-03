@@ -7,8 +7,7 @@ public class Course {
     private String day ; // 요일
     private int start; // 시작시간
     private int time ; // 강의시간
-
-    boolean valid = true; // 유효한 과목인지 저장
+    private boolean valid = true; // 유효한 과목인지 저장
 
 
     Course(String[] tokens) {
@@ -29,8 +28,6 @@ public class Course {
 
         this.time = getTime(tokens);
     }
-
-
 
     Course(String name, float credit, String day, int start, int time) {
         this.name = name;
@@ -127,6 +124,10 @@ public class Course {
     }
 
     public void print(){
-
+        System.out.println("Course Name: " + name);
+        System.out.println("Credit: " + credit);
+        System.out.println("Day: " + day);
+        System.out.println("Start: " + start);
+        System.out.println("Time: " + time);
     }
 }

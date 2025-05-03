@@ -10,26 +10,24 @@ public class CourseSchedule {
 
     CourseSchedule(String filename) throws Exception {
         File file = new File(filename);
+        try {
+            Scanner input = new Scanner(file);  // file is an instance of File
+            while(input.hasNext()){
+                String line = input.nextLine();
+                if(line.startsWith("//") || line.trim().isEmpty()) continue; // 주석 무시
+                String[] tokens = modifyFormat(line); // 형식 수정
+                Course course = new Course(tokens);
+                if (!course.isValid()) continue; // 유효하지 않으면 건너뜀
+                if (isConflict(course)) { // 시간 충돌 체크
+                    continue; // 충돌이 있으면 다음 줄로 넘어감
+                }
 
-        if(!isFileExist(filename)) { // 파일 존재 여부 체크
-            System.out.println("Unknwon File " + filename);
-            return; // 파일이 없으면 종료
-        }
-
-        Scanner input = new Scanner(file);
-        while(input.hasNext()){
-            String line = input.nextLine();
-            if(line.startsWith("//") || line.trim().isEmpty()) continue; // 주석 무시
-            String[] tokens = modifyFormat(line); // 형식 수정
-            Course course = new Course(tokens);
-            if (!course.isValid()) continue; // 유효하지 않으면 건너뜀
-
-            if (isConflict(course)) { // 시간 충돌 체크
-                continue; // 충돌이 있으면 다음 줄로 넘어감
+                courses[count] = course; // 과목 배열에 추가
+                count++; // 과목 개수 증가
             }
-
-            courses[count] = course; // 과목 배열에 추가
-            count++; // 과목 개수 증가
+        }
+        catch(Exception e) {
+                System.out.println("Unknwon File " + filename);
         }
     }
 
@@ -42,11 +40,6 @@ public class CourseSchedule {
             return newLine.split(":");
         }
         return line;
-    }
-
-    private boolean isFileExist(String filename) {
-        File file = new File(filename);
-        return file.exists();
     }
 
     private boolean isConflict(Course course) {
