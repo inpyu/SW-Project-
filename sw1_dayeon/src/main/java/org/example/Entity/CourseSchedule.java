@@ -1,14 +1,17 @@
-package org.example;
+package org.example.Entity;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Scanner;
 
 public class CourseSchedule {
 
-    Course[] courses = new Course[10]; // 과목 배열
-    int count = 0 ; // 과목 개수
+    ArrayList<Course> courses = new ArrayList<>(); // 과목 배열
 
-    CourseSchedule(String filename) throws Exception {
+    public CourseSchedule(String filename) throws Exception {
         File file = new File(filename);
         try {
             Scanner input = new Scanner(file);  // file is an instance of File
@@ -21,14 +24,27 @@ public class CourseSchedule {
                 if (isConflict(course)) { // 시간 충돌 체크
                     continue; // 충돌이 있으면 다음 줄로 넘어감
                 }
-
-                courses[count] = course; // 과목 배열에 추가
-                count++; // 과목 개수 증가
+                courses.add(course); // 과목 추가
             }
         }
         catch(Exception e) {
                 System.out.println("Unknwon File " + filename);
         }
+    }
+
+    public void addCourse(String name, float credit, String day, int start, int time) {
+        Course course = new Course(name, credit, day, start, time);
+        if (!course.isValid()) {
+            throw new IllegalArgumentException("Invalid course data: " + course);
+        }
+        if (isConflict(course)) {
+            throw new IllegalArgumentException("Conflict detected for course: " + course);
+        }
+        courses.add(course); // 과목 추가
+    }
+
+    public void deleteCourse(String name) {
+        courses.removeIf(course -> course.getName().equals(name)); // 이름으로 과목 삭제
     }
 
     private String[] modifyFormat(String string){
@@ -43,11 +59,9 @@ public class CourseSchedule {
     }
 
     private boolean isConflict(Course course) {
-        for (int i = 0; i < count; i++) {
-            Course c = courses[i];
+        for (Course c : courses) {
             if (c.getDay().equals(course.getDay())) { // 요일이 같으면
                 if (c.getStart() < course.getStart() + course.getTime() && c.getStart() + c.getTime() > course.getStart()) {
-                    System.out.println("Conflict hour -- " + course.getDay() + " " + course.getStart());
                     return true; // 충돌이 있으면 true
                 }
             }
@@ -56,7 +70,11 @@ public class CourseSchedule {
     }
 
     public Course getCourse(int i){
-        return courses[i];
+        return courses.get(i);
+    }
+
+    public ArrayList<Course> getCourses() {
+        return courses;
     }
 
     public void print() {
@@ -68,8 +86,7 @@ public class CourseSchedule {
         String[][] table = new String[9][5]; // 9교시 x 5일
 
         // 과목들을 시간표에 채워 넣기
-        for (int i = 0; i < count; i++) {
-            Course c = courses[i];
+        for (Course c : courses) {
             int dayIndex = getDayIndex(c.getDay()); // 요일 인덱스 (Mon=0, Tue=1,...)
             int start = c.getStart() - 1; // 시간대 인덱스 (1교시는 0번 인덱스)
 
@@ -121,4 +138,12 @@ public class CourseSchedule {
         }
     }
 
+    public void saveToFile(File file) throws IOException {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(file))) {
+            for (Course c : courses) {
+                writer.printf("%s:%.1f:%s:%d:%d%n", c.getName(), c.getCredit(), c.getDay(), c.getStart(), c.getTime());
+                writer.println("//");
+            }
+        }
+    }
 }
